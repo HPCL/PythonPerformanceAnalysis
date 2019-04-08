@@ -155,13 +155,13 @@ def get_pandas_non_summary():
     
     return metric_data
 
-def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=True,time=False):
+def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=True,time=False,data_dir=".tau"):
     '''
         Return a Pandas dictionary from data in the detault path
         TODO filtering and scaling
     '''
-    path = ".tau/" + application + "/" + experiment + "/"
-    key=application + ":" + experiment 
+    path = data_dir + "/" + application + "/" + experiment + "/"
+    key=application + "-" + experiment 
     
     if os.path.exists(key + '.shelve.dat'):
          d = shelve.open(key+'.shelve',flag='r')

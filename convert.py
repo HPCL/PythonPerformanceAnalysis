@@ -15,12 +15,12 @@ datasets = {
 	# 		"manual_scaling_Large",
 	# 		"mixed_thr_scaling_Large"],
 	# 'pr141_scaling': ["manual_scaling_TTbar70"]
-	'papi_tests': ["scaling"]
+	'pennant': ["example"]
 	# 'pr141_scaling': ["test"]
 }
 
-def processDataset(application,experiment):
-	path = ".tau/" + application + "/" + experiment + "/"
+def processDataset(application,experiment,data_dir=".tau"):
+	path = data_dir + "/" + application + "/" + experiment + "/"
 	# note that this function takes a long time to run, so only rerun if you must
 	metric_data = get_pandas_scaling(path, callpaths=True)
 
@@ -33,7 +33,7 @@ def processDataset(application,experiment):
     		metric_data = remove_erroneous_threads(metric_data,  [1, 4, 8, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256])
 
 	
-	key=application + ":" + experiment 
+	key=application + "-" + experiment 
 	d = shelve.open(key+'.shelve')
 
 	print type(metric_data)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
  for application,experiments in datasets.items():
     for experiment in experiments:
       print(application,experiment)
-      allprocesses.append(Process(target=processDataset, args=(application,experiment)))
+      allprocesses.append(Process(target=processDataset, args=(application,experiment,"tau")))
 
 for p in allprocesses:
   p.start()
