@@ -361,6 +361,12 @@ def remove_erroneous_threads(metric_data, thread_list):
 
 
 def combine_metrics(metric_dict,inc_exc='Inclusive'):
+    '''
+    Transforms a dictionary of metrics with each value as a panda into 
+        a single panda with metrics as columns
+    metric_dict hould be a dictionary with keys as metrics and pandas as values
+    '''
+
     if inc_exc == 'Inclusive': todrop = 'Exclusive'
     else: todrop = 'Inclusive'
     
@@ -368,7 +374,7 @@ def combine_metrics(metric_dict,inc_exc='Inclusive'):
     #TODO actually make this happen reading data in
     for m in metric_dict:
         if (not m == 'METADATA') and ('DERIVED' not in m):
-            metric_dict[m].index = metric_dict[m].index.droplevel()
+            metric_dict[m].index = metric_dict[m].index.droplevel('context')
     
     alldata = metric_dict['PAPI_TOT_CYC'].copy().drop(['Calls','Subcalls',todrop,'ProfileCalls'], axis=1)
     alldata['PAPI_TOT_CYC'] = alldata[inc_exc]
