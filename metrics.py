@@ -27,7 +27,7 @@ def add_IPC(metrics):
     CYC = 'PAPI_TOT_CYC'
     
     if(not (metrics.has_key(INS) and metrics.has_key(CYC)) ):
-        print "ERROR adding IPC to metric dictionary"
+        print ("ERROR adding IPC to metric dictionary")
         return False
     
     cyc = metrics['PAPI_TOT_CYC'].copy()
@@ -53,7 +53,7 @@ def add_CPI(metrics):
     CYC = 'PAPI_TOT_CYC'
     
     if(not (metrics.has_key(INS) and metrics.has_key(CYC)) ):
-        print "ERROR adding CPI to metric dictionary"
+        print ("ERROR adding CPI to metric dictionary")
         return False
         
     cyc = metrics['PAPI_TOT_CYC'].copy()
@@ -80,7 +80,7 @@ def add_VIPC(metrics):
     
 
     if(not (metrics.has_key(CYC) and metrics.has_key(VEC)) ):
-        print "ERROR adding VecEfficiency to metric dictionary"
+        print ("ERROR adding VecEfficiency to metric dictionary")
         return False
     
     vec = metrics[VEC].copy()
@@ -105,7 +105,7 @@ def add_VIPI(metrics):
     
 
     if(not (metrics.has_key(INS) and metrics.has_key(VEC)) ):
-        print "ERROR adding VecEfficiency to metric dictionary"
+        print ("ERROR adding VecEfficiency to metric dictionary")
         return False
     
     vec = metrics[VEC].copy()
@@ -130,7 +130,7 @@ def add_StallPercent(metrics):
     
 
     if(not (metrics.has_key(STL) and metrics.has_key(CYC)) ):
-        print "ERROR adding StallPercent to metric dictionary"
+        print ("ERROR adding StallPercent to metric dictionary")
         return False
     
     cyc = metrics[CYC].copy()
@@ -147,19 +147,19 @@ def add_StallPercent(metrics):
 
 def add_DERIVED_SP_VOPO(metrics):
     if (not metrics.has_key('PAPI_SP_OPS')):
-        print 'ERROR adding DERIVED_SP_VOPO to metric dictionary'
+        print ('ERROR adding DERIVED_SP_VOPO to metric dictionary')
         return False
     a0 = metrics['PAPI_SP_OPS'].copy()
     a0.index = a0.index.droplevel()
     u0 = a0.unstack()
     if (not metrics.has_key('PAPI_NATIVE_FP_ARITH:128B_PACKED_SINGLE')):
-        print 'ERROR adding DERIVED_SP_VOPO to metric dictionary'
+        print ('ERROR adding DERIVED_SP_VOPO to metric dictionary')
         return False
     a1 = metrics['PAPI_NATIVE_FP_ARITH:128B_PACKED_SINGLE'].copy()
     a1.index = a1.index.droplevel()
     u1 = a1.unstack()
     if (not metrics.has_key('PAPI_NATIVE_FP_ARITH:256B_PACKED_SINGLE')):
-        print 'ERROR adding DERIVED_SP_VOPO to metric dictionary'
+        print ('ERROR adding DERIVED_SP_VOPO to metric dictionary')
         return False
     a2 = metrics['PAPI_NATIVE_FP_ARITH:256B_PACKED_SINGLE'].copy()
     a2.index = a2.index.droplevel()
@@ -183,7 +183,7 @@ def add_L1_missrate(metrics, lst=True):
     L1M = 'PAPI_L1_TCM'  # L1 misses
     
     if(not (metrics.has_key(LST) and metrics.has_key(L1M)) ):
-        print "ERROR adding L1 MR to metric dictionary"
+        print ("ERROR adding L1 MR to metric dictionary")
         return False
         
     access = metrics[LST].copy()
@@ -200,16 +200,19 @@ def add_L1_missrate(metrics, lst=True):
         
     return True
 
-def add_L2_missrate(metrics):
+def add_L2_missrate(metrics, req=False):
     '''
     add Instructions per cycle to the metrics dictionary
     returns true if successful
     '''
-    L2A = 'PAPI_L2_TCA' # total load store
-    L2M = 'PAPI_L2_TCM'  # L1 misses
+    L2M = 'PAPI_L2_TCM' # total load store
+    if req:
+        L2A = 'PAPI_NATIVE_L2_RQSTS:REFERENCES'  # L2 accesses
+    else:
+        L2A = 'PAPI_L2_TCA'  # L2 accesses
     
     if(not (metrics.has_key(L2A) and metrics.has_key(L2M)) ):
-        print "ERROR adding L2 MR to metric dictionary"
+        print ("ERROR adding L2 MR to metric dictionary")
         return False
         
     access = metrics[L2A].copy()
@@ -217,12 +220,10 @@ def add_L2_missrate(metrics):
     access.index = access.index.droplevel()
     misses.index = misses.index.droplevel()    
         
-    
     uaccess = access.unstack()
     umisses = misses.unstack()
 
     metrics['DERIVED_L2_MISSRATE'] = (umisses / uaccess).stack()
-        
         
     return True
 
@@ -241,7 +242,7 @@ def add_L3_missrate(metrics, llc=False):
         L3M = 'PAPI_L3_TCM'  # L1 misses
     
     if(not (metrics.has_key(L3A) and metrics.has_key(L3M)) ):
-        print "ERROR adding L3 MR to metric dictionary"
+        print ("ERROR adding L3 MR to metric dictionary")
         return False
         
     access = metrics[L3A].copy()
@@ -260,13 +261,13 @@ def add_L3_missrate(metrics, llc=False):
 
 def add_DERIVED_BRANCH_MR(metrics):
     if (not metrics.has_key('PAPI_BR_MSP')):
-        print 'ERROR adding DERIVED_BRANCH_MR to metric dictionary'
+        print ('ERROR adding DERIVED_BRANCH_MR to metric dictionary')
         return False
     a0 = metrics['PAPI_BR_MSP'].copy()
     a0.index = a0.index.droplevel()
     u0 = a0.unstack()
     if (not metrics.has_key('PAPI_BR_CN')):
-        print 'ERROR adding DERIVED_BRANCH_MR to metric dictionary'
+        print ('ERROR adding DERIVED_BRANCH_MR to metric dictionary')
         return False
     a1 = metrics['PAPI_BR_CN'].copy()
     a1.index = a1.index.droplevel()
@@ -279,13 +280,13 @@ def add_DERIVED_BRANCH_MR(metrics):
 
 def add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics):
     if (not metrics.has_key('PAPI_NATIVE_FETCH_STALL')):
-        print 'ERROR adding DERIVED_RATIO_FETCH_STL_TOT_CYC to metric dictionary'
+        print ('ERROR adding DERIVED_RATIO_FETCH_STL_TOT_CYC to metric dictionary')
         return False
     a0 = metrics['PAPI_NATIVE_FETCH_STALL'].copy()
     a0.index = a0.index.droplevel()
     u0 = a0.unstack()
     if (not metrics.has_key('PAPI_TOT_CYC')):
-        print 'ERROR adding DERIVED_RATIO_FETCH_STL_TOT_CYC to metric dictionary'
+        print ('ERROR adding DERIVED_RATIO_FETCH_STL_TOT_CYC to metric dictionary')
         return False
     a1 = metrics['PAPI_TOT_CYC'].copy()
     a1.index = a1.index.droplevel()
@@ -310,7 +311,7 @@ def add_metric_to_scaling_data(data, metric_func, other=None):
 
     for kthread in results:
         if not results[kthread]:
-            print "ERROR adding metric to thread count: " + str(kthread)
+            print ("ERROR adding metric to thread count: " + str(kthread))
 
 
 ############################################################################################
@@ -381,7 +382,7 @@ def gen_metric_complete(met_list, operation, name):
     for m in range(len(met_list)):
 
         func += "\tif (not metrics.has_key('" + met_list[m] + "')):\n"
-        func += "\t\tprint 'ERROR adding " + name + " to metric dictionary'\n"
+        func += "\t\tprint ('ERROR adding " + name + " to metric dictionary')\n"
         func += "\t\treturn False\n"
 
         func += "\ta" + str(m) + " = metrics['" + met_list[m] + "'].copy()\n"
