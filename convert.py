@@ -15,7 +15,7 @@ datasets = {
 	# 		"manual_scaling_Large",
 	# 		"mixed_thr_scaling_Large"],
 	# 'pr141_scaling': ["manual_scaling_TTbar70"]
-	'pennant': ["example"]
+	'pennant': ["scaling"]
 	# 'pr141_scaling': ["test"]
 }
 

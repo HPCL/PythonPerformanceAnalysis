@@ -194,7 +194,7 @@ def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=T
     else:
         return metric_dict
 
-def get_pandas(path, callpaths=False):
+def get_pandas(path, callpaths=False, summary=True):
     '''
     returns a dictionary of pandas
         - keys are the metrics that each panda has data for
@@ -218,7 +218,10 @@ def get_pandas(path, callpaths=False):
         time_data = TauTrialProfileData.parse(p+'/MULTI__TIME')
         prof_data.metadata = time_data.metadata
         metric = prof_data.metric
-        metric_data[metric] = prof_data.summarize_samples()
+        if summary:
+            metric_data[metric] = prof_data.summarize_samples()
+        else:
+            metric_data[metric] = prof_data.interval_data()
 
         metric_data[metric].index.names = ['rank', 'context', 'thread', 'region']
         if not callpaths:
@@ -228,7 +231,7 @@ def get_pandas(path, callpaths=False):
         metric_data['METADATA'] = prof_data.metadata
     return metric_data
 
-def get_pandas_scaling(path, callpaths=False, time=False):
+def get_pandas_scaling(path, callpaths=False, time=False, summary=True):
     '''
     returns a dictionary of dictionaries of pandas
     The first layer of keys is the number of threads
@@ -296,7 +299,10 @@ def get_pandas_scaling(path, callpaths=False, time=False):
         if metric not in metric_data[num_threads].keys():
             metric_data[num_threads][metric] = []
 
-        metric_data[num_threads][metric].append(prof_data.summarize_samples(callpaths=callpaths))
+        if summary:
+            metric_data[num_threads][metric].append(prof_data.summarize_samples(callpaths=callpaths))
+        else:
+            metric_data[num_threads][metric].append(prof_data.interval_data())
         # metric_data[num_threads][metric].append(prof_data.interval_data())
         metric_data[num_threads][metric][-1].index.names = ['rank', 'context', 'thread', 'region']
         if not callpaths:
@@ -320,14 +326,17 @@ def get_pandas_scaling(path, callpaths=False, time=False):
         for km in metric_data[kt]:
             if not (km == 'METADATA'):
                 ntrials = len(metric_data[kt][km])
-                temp = metric_data[kt][km][0].copy()
-                temp.index = temp.index.droplevel()
-                metric_sum = temp.unstack()
-                for i in range(1, ntrials):
-                    temp = metric_data[kt][km][i].copy()
+                if ntrials > 1:
+                    temp = metric_data[kt][km][0].copy()
                     temp.index = temp.index.droplevel()
-                    metric_sum = metric_sum + temp.unstack()
-                metric_data[kt][km] = (metric_sum / ntrials).stack()
+                    metric_sum = temp.unstack()
+                    for i in range(1, ntrials):
+                        temp = metric_data[kt][km][i].copy()
+                        temp.index = temp.index.droplevel()
+                        metric_sum = metric_sum + temp.unstack()
+                    metric_data[kt][km] = (metric_sum / ntrials).stack()
+                else:
+                    metric_data[kt][km] = metric_data[kt][km][0]
 
     return metric_data
 
