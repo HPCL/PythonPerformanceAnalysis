@@ -302,7 +302,11 @@ def get_pandas_scaling(path, callpaths=False, time=False, summary=True):
         if summary:
             metric_data[num_threads][metric].append(prof_data.summarize_samples(callpaths=callpaths))
         else:
-            metric_data[num_threads][metric].append(prof_data.interval_data())
+            tmp = prof_data.interval_data()
+            base_data = tmp.loc[tmp['Timer Type'] == 'SAMPLE']
+            not_summary = base_data[['Calls', 'Exclusive', 'Inclusive', 'ProfileCalls',  'Subcalls']]
+            # not_summary = base_data.groupby(['Node', 'Context', 'Thread', 'Timer Name'])
+            metric_data[num_threads][metric].append(not_summary)
         # metric_data[num_threads][metric].append(prof_data.interval_data())
         metric_data[num_threads][metric][-1].index.names = ['rank', 'context', 'thread', 'region']
         if not callpaths:
