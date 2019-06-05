@@ -15,22 +15,26 @@ datasets = {
 	# 		"manual_scaling_Large",
 	# 		"mixed_thr_scaling_Large"],
 	# 'pr141_scaling': ["manual_scaling_TTbar70"]
-	'pennant': ["example"]
+	'taucmdr-x86_64': ["sample_x86_good_input"]
 	# 'pr141_scaling': ["test"]
 }
 
-def processDataset(application,experiment,data_dir=".tau"):
+def processDataset(application,experiment,data_dir=".tau",scaling=True):
 	path = data_dir + "/" + application + "/" + experiment + "/"
 	# note that this function takes a long time to run, so only rerun if you must
-	metric_data = get_pandas_scaling(path, callpaths=True)
+	if scaling:
+		metric_data = get_pandas_scaling(path, callpaths=True)
+	else:
+		metric_data = get_pandas(path, callpaths=True)
+
 
 
 	if application == "talapas_scaling":
-    		metric_data = remove_erroneous_threads(metric_data,  [1, 8, 16, 32, 48, 56])
+			metric_data = remove_erroneous_threads(metric_data,  [1, 8, 16, 32, 48, 56])
 	elif application == "cori_scaling":
-    		metric_data = remove_erroneous_threads(metric_data,  [1, 4, 8, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256])
+			metric_data = remove_erroneous_threads(metric_data,  [1, 4, 8, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256])
 	elif application == "pr141_scaling":
-    		metric_data = remove_erroneous_threads(metric_data,  [1, 4, 8, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256])
+			metric_data = remove_erroneous_threads(metric_data,  [1, 4, 8, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256])
 
 	
 	key=application + "-" + experiment 
@@ -48,9 +52,9 @@ def processDataset(application,experiment,data_dir=".tau"):
 if __name__ == '__main__':
  allprocesses = []
  for application,experiments in datasets.items():
-    for experiment in experiments:
-      print(application,experiment)
-      allprocesses.append(Process(target=processDataset, args=(application,experiment,"tau")))
+	for experiment in experiments:
+	  print(application,experiment)
+	  allprocesses.append(Process(target=processDataset, args=(application,experiment,"tau")))
 
 for p in allprocesses:
   p.start()
