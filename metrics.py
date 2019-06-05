@@ -32,8 +32,8 @@ def add_IPC(metrics):
     
     cyc = metrics['PAPI_TOT_CYC'].copy()
     ins = metrics['PAPI_TOT_INS'].copy()
-    cyc.index = cyc.index.droplevel()
-    ins.index = ins.index.droplevel()    
+    cyc.index = cyc.index.droplevel('context')
+    ins.index = ins.index.droplevel('context')    
         
     
     ucyc = cyc.unstack()
@@ -58,8 +58,8 @@ def add_CPI(metrics):
         
     cyc = metrics['PAPI_TOT_CYC'].copy()
     ins = metrics['PAPI_TOT_INS'].copy()
-    cyc.index = cyc.index.droplevel()
-    ins.index = ins.index.droplevel()    
+    cyc.index = cyc.index.droplevel('context')
+    ins.index = ins.index.droplevel('context')    
         
     
     ucyc = cyc.unstack()
@@ -85,8 +85,8 @@ def add_VIPC(metrics):
     
     vec = metrics[VEC].copy()
     cyc = metrics[CYC].copy()
-    vec.index = vec.index.droplevel()
-    cyc.index = cyc.index.droplevel()
+    vec.index = vec.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
 
     uvec = vec.unstack()
     ucyc = cyc.unstack()
@@ -110,8 +110,8 @@ def add_VIPI(metrics):
     
     vec = metrics[VEC].copy()
     ins = metrics[INS].copy()
-    vec.index = vec.index.droplevel()
-    ins.index = ins.index.droplevel()
+    vec.index = vec.index.droplevel('context')
+    ins.index = ins.index.droplevel('context')
 
     uvec = vec.unstack()
     uins = ins.unstack()
@@ -135,8 +135,8 @@ def add_StallPercent(metrics):
     
     cyc = metrics[CYC].copy()
     stl = metrics[STL].copy()
-    cyc.index = cyc.index.droplevel()
-    stl.index = stl.index.droplevel()
+    cyc.index = cyc.index.droplevel('context')
+    stl.index = stl.index.droplevel('context')
 
     ucyc = cyc.unstack()
     ustl = stl.unstack()
@@ -150,19 +150,19 @@ def add_DERIVED_SP_VOPO(metrics):
         print ('ERROR adding DERIVED_SP_VOPO to metric dictionary')
         return False
     a0 = metrics['PAPI_SP_OPS'].copy()
-    a0.index = a0.index.droplevel()
+    a0.index = a0.index.droplevel('context')
     u0 = a0.unstack()
     if (not metrics.has_key('PAPI_NATIVE_FP_ARITH:128B_PACKED_SINGLE')):
         print ('ERROR adding DERIVED_SP_VOPO to metric dictionary')
         return False
     a1 = metrics['PAPI_NATIVE_FP_ARITH:128B_PACKED_SINGLE'].copy()
-    a1.index = a1.index.droplevel()
+    a1.index = a1.index.droplevel('context')
     u1 = a1.unstack()
     if (not metrics.has_key('PAPI_NATIVE_FP_ARITH:256B_PACKED_SINGLE')):
         print ('ERROR adding DERIVED_SP_VOPO to metric dictionary')
         return False
     a2 = metrics['PAPI_NATIVE_FP_ARITH:256B_PACKED_SINGLE'].copy()
-    a2.index = a2.index.droplevel()
+    a2.index = a2.index.droplevel('context')
     u2 = a2.unstack()
     metrics['DERIVED_SP_VOPO'] = ((u1 + u2) / (u0 )).stack()
 
@@ -188,8 +188,8 @@ def add_L1_missrate(metrics, lst=True):
         
     access = metrics[LST].copy()
     misses = metrics[L1M].copy()
-    access.index = access.index.droplevel()
-    misses.index = misses.index.droplevel()    
+    access.index = access.index.droplevel('context')
+    misses.index = misses.index.droplevel('context')    
         
     
     uaccess = access.unstack()
@@ -217,8 +217,8 @@ def add_L2_missrate(metrics, req=False):
         
     access = metrics[L2A].copy()
     misses = metrics[L2M].copy()
-    access.index = access.index.droplevel()
-    misses.index = misses.index.droplevel()    
+    access.index = access.index.droplevel('context')
+    misses.index = misses.index.droplevel('context')    
         
     uaccess = access.unstack()
     umisses = misses.unstack()
@@ -247,8 +247,8 @@ def add_L3_missrate(metrics, llc=False):
         
     access = metrics[L3A].copy()
     misses = metrics[L3M].copy()
-    access.index = access.index.droplevel()
-    misses.index = misses.index.droplevel()    
+    access.index = access.index.droplevel('context')
+    misses.index = misses.index.droplevel('context')    
         
     
     uaccess = access.unstack()
@@ -264,13 +264,13 @@ def add_DERIVED_BRANCH_MR(metrics):
         print ('ERROR adding DERIVED_BRANCH_MR to metric dictionary')
         return False
     a0 = metrics['PAPI_BR_MSP'].copy()
-    a0.index = a0.index.droplevel()
+    a0.index = a0.index.droplevel('context')
     u0 = a0.unstack()
     if (not metrics.has_key('PAPI_BR_CN')):
         print ('ERROR adding DERIVED_BRANCH_MR to metric dictionary')
         return False
     a1 = metrics['PAPI_BR_CN'].copy()
-    a1.index = a1.index.droplevel()
+    a1.index = a1.index.droplevel('context')
     u1 = a1.unstack()
     metrics['DERIVED_BRANCH_MR'] = (u0 / u1).stack()
 
@@ -283,13 +283,13 @@ def add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics):
         print ('ERROR adding DERIVED_RATIO_FETCH_STL_TOT_CYC to metric dictionary')
         return False
     a0 = metrics['PAPI_NATIVE_FETCH_STALL'].copy()
-    a0.index = a0.index.droplevel()
+    a0.index = a0.index.droplevel('context')
     u0 = a0.unstack()
     if (not metrics.has_key('PAPI_TOT_CYC')):
         print ('ERROR adding DERIVED_RATIO_FETCH_STL_TOT_CYC to metric dictionary')
         return False
     a1 = metrics['PAPI_TOT_CYC'].copy()
-    a1.index = a1.index.droplevel()
+    a1.index = a1.index.droplevel('context')
     u1 = a1.unstack()
     metrics['DERIVED_RATIO_FETCH_STL_TOT_CYC'] = (u0 / u1).stack()
 
@@ -365,7 +365,7 @@ def gen_metric(met_list, name):
         func += "\t\treturn False"
 
         func += "\ta" + str(m) + " = metrics['" + met_list[m] + "'].copy()\n"
-        func += "\ta" + str(m) + ".index = a" + str(m) + ".index.droplevel()\n"
+        func += "\ta" + str(m) + ".index = a" + str(m) + ".index.droplevel('context')\n"
         func += "\tu" + str(m) + " = a" + str(m) + ".unstack()\n"
     
 
@@ -386,7 +386,7 @@ def gen_metric_complete(met_list, operation, name):
         func += "\t\treturn False\n"
 
         func += "\ta" + str(m) + " = metrics['" + met_list[m] + "'].copy()\n"
-        func += "\ta" + str(m) + ".index = a" + str(m) + ".index.droplevel()\n"
+        func += "\ta" + str(m) + ".index = a" + str(m) + ".index.droplevel('context')\n"
         func += "\tu" + str(m) + " = a" + str(m) + ".unstack()\n"
     
         operation.replace(met_list[m], "u" + str(m))
