@@ -297,6 +297,84 @@ def add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics):
 
 
 
+def add_LST_CYC_RATE(metrics):
+    '''
+    the ratio of loads and stores to total cycles
+    intended to be a proxy for memory BW
+    '''
+    CYC = 'PAPI_TOT_CYC'
+    LST = 'PAPI_LST_INS'
+    
+
+    if(not (metrics.has_key(CYC) and metrics.has_key(LST)) ):
+        print ("ERROR adding DERIVED_LST_CYC_RATE to metric dictionary")
+        return False
+    
+    lst = metrics[LST].copy()
+    cyc = metrics[CYC].copy()
+    lst.index = lst.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
+
+    ulst = lst.unstack()
+    ucyc = cyc.unstack()
+
+    metrics['DERIVED_LST_CYC_RATE'] = (ulst / ucyc).stack()
+
+    return True
+
+def add_TCM3_CYC_RATE(metrics):
+    '''
+    the ratio of memory access (L3 misses) to total cycles
+    intended to be a proxy for BW
+    '''
+    CYC = 'PAPI_TOT_CYC'
+    LST = 'PAPI_L3_TCM'
+    
+
+    if(not (metrics.has_key(CYC) and metrics.has_key(LST)) ):
+        print ("ERROR adding DERIVED_TCM3_CYC_RATE to metric dictionary")
+        return False
+    
+    lst = metrics[LST].copy()
+    cyc = metrics[CYC].copy()
+    lst.index = lst.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
+
+    ulst = lst.unstack()
+    ucyc = cyc.unstack()
+
+    metrics['DERIVED_TCM3_CYC_RATE'] = (ulst / ucyc).stack()
+
+    return True
+
+
+def add_OFF_REQ_RATE(metrics):
+    '''
+    the ratio of memory access (L3 misses) to total cycles
+    intended to be a proxy for BW
+    '''
+    CYC = 'PAPI_TOT_CYC'
+    LST = 'PAPI_NATIVE_OFFCORE_REQUESTS:ALL_REQUESTS'
+    
+
+    if(not (metrics.has_key(CYC) and metrics.has_key(LST)) ):
+        print ("ERROR adding OFF_REQ_RATE to metric dictionary")
+        return False
+    
+    lst = metrics[LST].copy()
+    cyc = metrics[CYC].copy()
+    lst.index = lst.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
+
+    ulst = lst.unstack()
+    ucyc = cyc.unstack()
+
+    metrics['DERIVED_OFF_REQ_RATE'] = (ulst / ucyc).stack()
+
+    return True
+
+
+
 def add_metric_to_scaling_data(data, metric_func, other=None):
     '''
     data is data with scaling information
