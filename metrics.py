@@ -18,6 +18,29 @@ add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics)
 
 from utilities import *
 
+
+
+
+
+def add_metric_to_scaling_data(data, metric_func, other=None):
+    '''
+    data is data with scaling information
+    metric_func is a function pointer to one of the metric functions in this file
+    '''
+    results = {}
+    for kthread in data:
+        if other is None:
+            results[kthread] = metric_func(data[kthread])
+        else:
+            results[kthread] = metric_func(data[kthread], other)
+
+    for kthread in results:
+        if not results[kthread]:
+            print ("ERROR adding metric to thread count: " + str(kthread))
+
+
+
+
 def add_IPC(metrics):
     '''
     add Instructions per cycle to the metrics dictionary
@@ -296,6 +319,12 @@ def add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics):
     return True
 
 
+############################################################################################
+
+#                                   Metrics for BW stuff
+
+############################################################################################
+
 
 def add_LST_CYC_RATE(metrics):
     '''
@@ -375,21 +404,97 @@ def add_OFF_REQ_RATE(metrics):
 
 
 
-def add_metric_to_scaling_data(data, metric_func, other=None):
-    '''
-    data is data with scaling information
-    metric_func is a function pointer to one of the metric functions in this file
-    '''
-    results = {}
-    for kthread in data:
-        if other is None:
-            results[kthread] = metric_func(data[kthread])
-        else:
-            results[kthread] = metric_func(data[kthread], other)
 
-    for kthread in results:
-        if not results[kthread]:
-            print ("ERROR adding metric to thread count: " + str(kthread))
+def add_MEM_UOPS_RATE(metrics):
+    '''
+    the ratio of memory access (L3 misses) to total cycles
+    intended to be a proxy for BW
+    '''
+    CYC = 'PAPI_TOT_CYC'
+    LD  = 'PAPI_NATIVE_MEM_UOPS_RETIRED:ALL_LOADS'
+    ST  = 'PAPI_NATIVE_MEM_UOPS_RETIRED:ALL_STORES'
+    
+
+    if(not (metrics.has_key(CYC) and metrics.has_key(LD) and metrics.has_key(ST)) ):
+        print ("ERROR adding MEM_UOPS_RATE to metric dictionary")
+        return False
+    
+    ld  = metrics[LD].copy()
+    st  = metrics[ST].copy()
+    cyc = metrics[CYC].copy()
+    ld.index = ld.index.droplevel('context')
+    st.index = st.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
+
+    uld  = ld.unstack()
+    ust  = st.unstack()
+    ucyc = cyc.unstack()
+
+    metrics['DERIVED_MEM_UOPS_RATE'] = ((uld+ust) / ucyc).stack()
+
+    return True
+
+
+
+def add_IMC_CAS_COUNT_RATE(metrics):
+    '''
+    '''
+    CYC  = 'PAPI_TOT_CYC'
+    IMC0 = 'PAPI_NATIVE_UNC_M_CAS_COUNT:ALL:cpu=0'
+    
+
+    if(not (metrics.has_key(CYC) \
+            and metrics.has_key(IMC0) \
+           ) ):
+        print ("ERROR adding IMC_CAS_COUNT_RATE to metric dictionary")
+        return False
+    
+    imc0 = metrics[IMC0].copy()
+    cyc  = metrics[CYC].copy()
+    imc0.index = imc0.index.droplevel('context')
+    cyc.index  = cyc.index.droplevel('context')
+
+    uimc0 = imc0.unstack()
+    ucyc  = cyc.unstack()
+
+#     metrics['DERIVED_IMC_CAS_COUNT_RATE'] = ((uimc0*64) ).stack()
+    metrics['DERIVED_IMC_CAS_COUNT_RATE'] = ((uimc0*64*2101000000) /(ucyc*1000000) ).stack()
+
+    return True
+
+
+    
+    
+
+def add_LOAD_DRAM_RATE(metrics):
+    '''
+    the ratio of memory access (L3 misses) to total cycles
+    intended to be a proxy for BW
+    '''
+    CYC = 'PAPI_TOT_CYC'
+    LOC  = 'PAPI_NATIVE_MEM_LOAD_UOPS_L3_MISS_RETIRED:LOCAL_DRAM'
+    REM  = 'PAPI_NATIVE_MEM_LOAD_UOPS_L3_MISS_RETIRED:REMOTE_DRAM'
+    
+
+    if(not (metrics.has_key(CYC) and metrics.has_key(LOC) and metrics.has_key(REM)) ):
+        print ("ERROR adding LOAD_DRAM_RATE to metric dictionary")
+        return False
+    
+    loc = metrics[LOC].copy()
+    rem = metrics[REM].copy()
+    cyc = metrics[CYC].copy()
+    loc.index = loc.index.droplevel('context')
+    rem.index = rem.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
+
+    uloc  = loc.unstack()
+    urem  = rem.unstack()
+    ucyc = cyc.unstack()
+
+    metrics['DERIVED_LOAD_DRAM_RATE'] = ((uloc+urem) / ucyc).stack()
+
+    return True
+
 
 
 ############################################################################################
