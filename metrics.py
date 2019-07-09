@@ -283,6 +283,10 @@ def add_L3_missrate(metrics, llc=False):
     return True
 
 def add_DERIVED_BRANCH_MR(metrics):
+    '''
+    add miss rate for branch prediction to the metrics dictionary
+    returns true if successful
+    '''
     if (not metrics.has_key('PAPI_BR_MSP')):
         print ('ERROR adding DERIVED_BRANCH_MR to metric dictionary')
         return False
@@ -302,6 +306,10 @@ def add_DERIVED_BRANCH_MR(metrics):
 
 
 def add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics):
+    '''
+    add fetch stalls per cycle to the metrics dictionary
+    returns true if successful
+    '''
     if (not metrics.has_key('PAPI_NATIVE_FETCH_STALL')):
         print ('ERROR adding DERIVED_RATIO_FETCH_STL_TOT_CYC to metric dictionary')
         return False
@@ -317,6 +325,60 @@ def add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics):
     metrics['DERIVED_RATIO_FETCH_STL_TOT_CYC'] = (u0 / u1).stack()
 
     return True
+
+
+
+def add_DERIVED_OTHER_INS(metrics):
+    '''
+    add a count of 'other' instructions to the metrics dictionary
+    other meaning not LST, SIMD, or FLOP (all doubles for now)
+    useful for pie charts
+    returns true if successful
+    '''
+    TOT  = 'PAPI_TOT_INS'
+    LST  = 'PAPI_LST_INS'
+    V128 = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:128B_PACKED_DOUBLE'
+    V256 = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:256B_PACKED_DOUBLE'
+    V512 = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:512B_PACKED_DOUBLE'
+    SFLP = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:SCALAR_DOUBLE'
+    
+
+    if(not (metrics.has_key(TOT)\
+            and metrics.has_key(LST)\
+            and metrics.has_key(V128)\
+            and metrics.has_key(V256)\
+            and metrics.has_key(V512)\
+            and metrics.has_key(SFLP)\
+           ) ):
+        print ("ERROR adding DERIVED_OTHER_INS to metric dictionary")
+        return False
+    
+    tot  = metrics[TOT].copy()
+    lst  = metrics[LST].copy()
+    v128 = metrics[V128].copy()
+    v256 = metrics[V256].copy()
+    v512 = metrics[V512].copy()
+    sflop = metrics[SFLP].copy()
+    
+    tot.index = tot.index.droplevel('context')
+    lst.index  = lst.index.droplevel('context')
+    v128.index  = v128.index.droplevel('context')
+    v256.index  = v256.index.droplevel('context')
+    v512.index = v512.index.droplevel('context')
+    sflop.index = sflop.index.droplevel('context')
+
+    utot = tot.unstack()
+    ulst  = lst.unstack()
+    uv128  = v128.unstack()
+    uv256  = v256.unstack()
+    uv512 = v512.unstack()
+    usflop = sflop.unstack()
+
+    metrics['DERIVED_OTHER_INS'] = (utot - (ulst + uv128 + uv256 + uv512 + usflop)).stack()
+
+    return True
+
+
 
 
 ############################################################################################
@@ -496,6 +558,62 @@ def add_LOAD_DRAM_RATE(metrics):
     return True
 
 
+def add_MEM_TRANS_RATE(metrics):
+    '''
+    the ratio of memory access (L3 misses) to total cycles
+    intended to be a proxy for BW
+    '''
+    CYC = 'PAPI_TOT_CYC'
+    MEM = 'PAPI_NATIVE_MEM_TRANS_RETIRED'
+    
+
+    if(not (metrics.has_key(CYC) and metrics.has_key(MEM)) ):
+        print ("ERROR adding OFF_REQ_RATE to metric dictionary")
+        return False
+    
+    mem = metrics[MEM].copy()
+    cyc = metrics[CYC].copy()
+    mem.index = mem.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
+
+    umem = mem.unstack()
+    ucyc = cyc.unstack()
+
+    metrics['DERIVED_MEM_TRANS_RATE'] = (umem / ucyc).stack()
+
+    return True
+
+
+
+def add_MEM_STL_RATES(metrics):
+    '''
+    the ratio of memory access (L3 misses) to total cycles
+    intended to be a proxy for BW
+    '''
+    CYC  = 'PAPI_TOT_CYC'
+    MCYC = 'PAPI_NATIVE_CYCLE_ACTIVITY:CYCLES_MEM_ANY'
+    MSTL = 'PAPI_NATIVE_CYCLE_ACTIVITY:STALLS_MEM_ANY'
+    
+
+    if(not (metrics.has_key(CYC) and metrics.has_key(MCYC) and metrics.has_key(MSTL)) ):
+        print ("ERROR adding MEM_STL_RATES to metric dictionary")
+        return False
+    
+    mcyc = metrics[MCYC].copy()
+    mstl = metrics[MSTL].copy()
+    cyc = metrics[CYC].copy()
+    mcyc.index = mcyc.index.droplevel('context')
+    mstl.index = mstl.index.droplevel('context')
+    cyc.index = cyc.index.droplevel('context')
+
+    umcyc = mcyc.unstack()
+    umstl = mstl.unstack()
+    ucyc = cyc.unstack()
+
+    metrics['DERIVED_MEM_STL_TOT_RATE'] = (umstl / ucyc).stack()
+    metrics['DERIVED_MEM_STL_MEM_RATE'] = (umstl / umcyc).stack()
+
+    return True
 
 ############################################################################################
 
