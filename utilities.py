@@ -155,7 +155,7 @@ def get_pandas_non_summary():
     
     return metric_data
 
-def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=True,time=False,data_dir=".tau"):
+def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=True,time=False,multi=False,data_dir=".tau"):
     '''
         Return a Pandas dictionary from data in the detault path
         TODO filtering and scaling
@@ -173,6 +173,8 @@ def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=T
 
         if scaling:
             metric_dict = get_pandas_scaling(path, callpaths=callpaths, time=time)
+        elif multi:
+            metric_dict = get_pandas_multi(path, callpaths=callpaths)
         else:
             metric_dict = get_pandas(path,callpaths=callpaths)
     
@@ -229,6 +231,44 @@ def get_pandas(path, callpaths=False, summary=True):
             metric_data[metric] = metric_data[metric][~metric_data[metric].index.get_level_values('region').str.contains(".TAU application")]
             
         metric_data['METADATA'] = prof_data.metadata
+    return metric_data
+
+def get_pandas_multi(path, callpaths=False, summary=True):
+    '''
+    returns a dictionary of pandas
+        - keys are the metrics that each panda has data for
+    params
+        - path is the path to the trials (should e directory filled with numbered dirs)
+        - 
+    vals are the pandas that have the data organized however they organzed it
+        - samples are turned into summaries
+        - tau cmdr must be installed and .tau with the relevant data must be in this dir
+    '''
+    if not os.path.exists(path):
+        sys.exit("Error: invalid data path: %s" % path)
+    metric_data = {}
+    
+    paths = [path+n+'/' for n in listdir(path) if (not isfile(join(path, n)))]
+    num_trials = len(paths)
+    #files = [f for f in listdir(path) if not isfile(join(p, f))]
+    for p in paths:
+        d = [f for f in listdir(p) if (not isfile(join(p, f))) and (not (f == 'MULTI__TIME'))]
+        for _d in d: 
+	        prof_data = TauTrialProfileData.parse(p+'/'+_d)
+	        time_data = TauTrialProfileData.parse(p+'/MULTI__TIME')
+	        prof_data.metadata = time_data.metadata
+	        metric = prof_data.metric
+	        if summary:
+	            metric_data[metric] = prof_data.summarize_samples()
+	        else:
+	            metric_data[metric] = prof_data.interval_data()
+
+	        metric_data[metric].index.names = ['rank', 'context', 'thread', 'region']
+	        if not callpaths:
+	            #metric_data[metric]['Total'] = metric_data[metric][metric_data[metric].index.get_level_values('region').str.match('[SUMMARY] .TAU application')]
+	            metric_data[metric] = metric_data[metric][~metric_data[metric].index.get_level_values('region').str.contains(".TAU application")]
+	            
+	        metric_data['METADATA'] = prof_data.metadata
     return metric_data
 
 def get_pandas_scaling(path, callpaths=False, time=False, summary=True):
@@ -578,10 +618,15 @@ def get_full_app_metric(data, inclusive=True, avg=True, func = 'application'):
 ############################################################################################
 
 
-
-
 def filter_libs_out(dfs):
-    dfs_filtered = dfs.groupby(level='region').filter(lambda x: ('.TAU application =>' not in x.name) and ('tbb' not in x.name) and ('syscall' not in x.name)  and ('std::' not in x.name))
+    dfs_filtered = dfs.groupby(level='region').filter(lambda x: ('=>' not in x.name) \
+                                                                and ('_kmp' not in x.name)\
+                                                                and ('tbb' not in x.name)\
+                                                                and ('syscall' not in x.name)\
+                                                                and ('.so' not in x.name)\
+                                                                and (' __pthread' not in x.name)\
+                                                                and ('std::' not in x.name)\
+                                                                )
     return dfs_filtered
 
 def largest_stddev(dfs,n):

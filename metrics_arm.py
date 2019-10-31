@@ -18,7 +18,7 @@ def add_DERIVED_OTHER_INS(metrics):
     '''
 
     '''
-    TOT = 'PAPI_TOT_INS'
+    TOT = 'PAPI_NATIVE_INST_SPEC'
     LD  = 'PAPI_LD_INS'
     ST  = 'PAPI_SR_INS'
     FP  = 'PAPI_FP_INS'

@@ -4,12 +4,15 @@ functions to add derived metrics to the dictionaries of metrics
 please use the examples to add more
 
 Existing list of prewritten metrics:
-add_IPC(metrics)                - Instructions per Cycle
-add_CPI(metrics)                - Cycles per instruction
-add_VIPC(metrics)               - vector instructions per cycle
-add_VIPI(metrics)               - vector instructions per instruction (i.e. fraction of total)
-add_L1_missrate(metrics)        - miss rate for L1 cache
-add_DERIVED_BRANCH_MR(metrics)  - fraction of miss predicted branches 
+add_MEM_BOUND_FRACTIONS(metrics) - fraction of stalls associated with mem boundedness
+add_BW_BOUND_FRACTIONS(metrics)  - fraction of mem bound stalls associated with BW bound
+    -- note the above two add multiple metrics
+add_IPC(metrics)                 - Instructions per Cycle
+add_CPI(metrics)                 - Cycles per instruction
+add_VIPC(metrics)                - vector instructions per cycle
+add_VIPI(metrics)                - vector instructions per instruction (i.e. fraction of total)
+add_L1_missrate(metrics)         - miss rate for L1 cache
+add_DERIVED_BRANCH_MR(metrics)   - fraction of miss predicted branches 
 
 add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics)
 
@@ -19,6 +22,92 @@ add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics)
 from utilities import *
 
 
+
+def add_MEM_BOUND_FRACTIONS(metrics):
+    '''
+
+    '''
+    TOT_CYC  = 'PAPI_TOT_CYC'
+    STL_ALL  = 'PAPI_NATIVE_RESOURCE_STALLS:ALL'
+    STL_SB   = 'PAPI_NATIVE_RESOURCE_STALLS:SB'
+#     L1D_PEND = 'PAPI_NATIVE_CYCLE_ACTIVITY:CYCLES_L1D_PENDING'
+    L1D_PEND = 'PAPI_NATIVE_CYCLE_ACTIVITY:STALLS_L1D_MISS' # might be thisnot sure yet
+
+
+    if(not (metrics.has_key(TOT_CYC) \
+            and metrics.has_key(STL_ALL) \
+            and metrics.has_key(STL_SB) \
+            and metrics.has_key(L1D_PEND) \
+           ) ):
+        print ("ERROR adding MEM_BOUND_FRACTIONS to metric dictionary")
+        return False
+    
+    stl_all  = metrics[STL_ALL].copy()
+    stl_sb   = metrics[STL_SB].copy()
+    l1d_pend = metrics[L1D_PEND].copy()
+    cyc   = metrics[TOT_CYC].copy()
+    
+    stl_all.index = stl_all.index.droplevel('context')
+    stl_sb.index  = stl_sb.index.droplevel('context')
+    l1d_pend.index  = l1d_pend.index.droplevel('context')
+    cyc.index   = cyc.index.droplevel('context')
+
+    ustl_all  = stl_all.unstack()
+    ustl_sb = stl_sb.unstack()
+    ul1d_pend = l1d_pend.unstack()
+    ucyc   = cyc.unstack()
+
+#     metrics['DERIVED_MEM_BOUND_FRACTION'] = ( max(ul1d_pend,ustl_sb)/(ustl_all) ).stack()
+    metrics['DERIVED_L1D_PEND_FRACTION'] = ( ul1d_pend/ustl_all ).stack()
+    metrics['DERIVED_STL_SB_FRACTION'] = ( ustl_sb/ustl_all ).stack()
+
+    return True
+
+
+def add_BW_BOUND_FRACTIONS(metrics):
+    '''
+
+    '''
+    TOT_CYC  = 'PAPI_TOT_CYC'
+    STL_ALL  = 'PAPI_NATIVE_RESOURCE_STALLS:ALL'
+    STL_SB   = 'PAPI_NATIVE_RESOURCE_STALLS:SB'
+    SQ_FULL  = 'PAPI_NATIVE_OFFCORE_REQUESTS_BUFFER:SQ_FULL'
+    FB_FULL  = 'PAPI_NATIVE_L1D_PEND_MISS:FB_FULL'
+    
+
+
+    if(not (metrics.has_key(TOT_CYC) \
+            and metrics.has_key(STL_ALL) \
+            and metrics.has_key(STL_SB) \
+            and metrics.has_key(SQ_FULL) \
+            and metrics.has_key(FB_FULL) \
+           ) ):
+        print ("ERROR adding BW_BOUND_FRACTIONS to metric dictionary")
+        return False
+    
+    stl_all  = metrics[STL_ALL].copy()
+    stl_sb   = metrics[STL_SB].copy()
+    sq_full  = metrics[SQ_FULL].copy()
+    fb_full  = metrics[FB_FULL].copy()
+    cyc   = metrics[TOT_CYC].copy()
+       
+    stl_all.index = stl_all.index.droplevel('context')
+    stl_sb.index  = stl_sb.index.droplevel('context')
+    sq_full.index = sq_full.index.droplevel('context')
+    fb_full.index  = fb_full.index.droplevel('context')
+    cyc.index   = cyc.index.droplevel('context')
+
+    ustl_all  = stl_all.unstack()
+    ustl_sb = stl_sb.unstack()
+    usq_full  = sq_full.unstack()
+    ufb_full = fb_full.unstack()
+    ucyc   = cyc.unstack()
+
+#     metrics['DERIVED_MEM_BOUND_FRACTION'] = ( max(ul1d_pend,ustl_sb)/(ustl_all) ).stack()
+    metrics['DERIVED_SQ_FB_FULL_FRACTION'] = ( (usq_full+ufb_full)/ustl_all ).stack()
+    metrics['DERIVED_STL_SB_FRACTION'] = ( ustl_sb/ustl_all ).stack()
+
+    return True
 
 
 
@@ -448,7 +537,7 @@ def add_MEM_TRANS_RATE(metrics):
     
 
     if(not (metrics.has_key(CYC) and metrics.has_key(MEM)) ):
-        print ("ERROR adding OFF_REQ_RATE to metric dictionary")
+        print ("ERROR adding MEM_TRANS_RATE to metric dictionary")
         return False
     
     mem = metrics[MEM].copy()
