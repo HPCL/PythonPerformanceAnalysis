@@ -14,7 +14,7 @@ We recommned using the functions in conjuntion with jupyter notebooks (which is 
 
 Make sure that you have a working C++ compiler. To use a specific compiler, set your CXX environment variable, e.g., `export CXX=g++-8`. 
 
-The quickest way to install prerequisites is to run the provided `install.sh` script. If that fails, you can adjust the process by following the following steps.
+The quickest way to install prerequisites is to run the provided `install.sh` script, e.g., `./install.sh 2>&1 | tee install.log`. If that fails, you can adjust the process by following the following steps.
 
 1. Create a project directory, e.g, `$HOME/performance`, and continue the following steps inside that project directory, `$PROJECT_DIR`.
 
