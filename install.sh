@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/bin/sh 
 
+
+CURDIR=`pwd`
 # First, check compilers
 success=0
 for compiler in $CXX g++ icpc c++; do
@@ -11,25 +13,27 @@ if [ "$success" = "0" ]; then
     exit 1;
 fi
     
+TS=`date +"%Y-%m-%d_%H-%M"`
 PROJECT_DIR="${PROJECT_DIR:-${PWD}/tools}"
+
 echo "Installing TAU Commander and Hatchet in $PROJECT_DIR"
 
-if [ ! -d $PROJECT_DIR ]; then 
-    mkdir $PROJECT_DIR
-fi
+[ -d $PROJECT_DIR ] || mkdir $PROJECT_DIR
 
 cd $PROJECT_DIR
 
 git clone --branch sane-dependencies https://github.com/ParaToolsInc/taucmdr.git taucmdr
 cd taucmdr
-make install INSTALLDIR=$PROJECT_DIR/taucmdr/installed && \
+#make install INSTALLDIR=$PROJECT_DIR/taucmdr/installed && \
 $PROJECT_DIR/taucmdr/installed/system/configure
 
 if [ "$?" != 0 ]; then
-    echo "ERROR: Could not configure system-wide TAU; this is probably fine, it just means that some TAU Commander commands will take longer. Continuing with installation..."" 
+    echo "ERROR: Could not configure system-wide TAU; this is probably fine, it just means that some TAU Commander commands will take longer. Continuing with installation..."
 fi
 
 MYSHELL=`basename $SHELL`
+CONDA=$PROJECT_DIR/taucmdr/installed/conda/bin/conda
+PYTHON=$PROJECT_DIR/taucmdr/installed/conda/bin/python
 $PROJECT_DIR/taucmdr/installed/conda/bin/conda init $MYSHELL
 
 cd $PROJECT_DIR
@@ -38,6 +42,13 @@ cd hatchet
 ./install.sh
 
 cd $PROJECT_DIR
-echo "Testing your installation"
-exec $MYSHELL -c "$PROJECT_DIR/taucmdr/installed/conda/bin/conda install -y matplotlib && \
-$PROJECT_DIR/taucmdr/installed/conda/bin/python -c 'import hatchet; import taucmdr' && echo \"SUCCESS! Add $PROJECT_DIR/taucmdr/installed/bin to your PATH and take a look at GettingStarted.ipynb\" || echo \"Installation failed: could not import hatchet or taucmdr\""
+$CONDA install -q -y matplotlib && $CONDA update -q -y -n base -c defaults conda
+echo "-------------------- finished installation of Tau Commander and Hatchet. -----------------"
+echo ""
+exec $MYSHELL -c "echo \"Testing your installation\" && \
+    $PYTHON -c 'import hatchet; import taucmdr' \
+        && echo \"SUCCESS! Add $PROJECT_DIR/taucmdr/installed/bin to your PATH and take a look at GettingStarted.ipynb\" \
+        || echo \"Installation failed: could not import hatchet or taucmdr\""
+cd $CURDIR
+echo ""
+exit 0
