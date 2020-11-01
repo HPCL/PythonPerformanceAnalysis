@@ -41,5 +41,3 @@ cd $PROJECT_DIR
 echo "Testing your installation"
 exec $MYSHELL -c "$PROJECT_DIR/taucmdr/installed/conda/bin/conda install -y matplotlib && \
 $PROJECT_DIR/taucmdr/installed/conda/bin/python -c 'import hatchet; import taucmdr' && echo \"SUCCESS! Add $PROJECT_DIR/taucmdr/installed/bin to your PATH and take a look at GettingStarted.ipynb\" || echo \"Installation failed: could not import hatchet or taucmdr\""
-
-echo "You may wish to add $PROJECT_DIR/taucmdr/installed/bin to your PATH, e.g., export PATH=$PROJECT_DIR/taucmdr/installed/bin:$PATH"
