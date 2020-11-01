@@ -26,8 +26,7 @@ make install INSTALLDIR=$PROJECT_DIR/taucmdr/installed && \
 $PROJECT_DIR/taucmdr/installed/system/configure
 
 if [ "$?" != 0 ]; then
-    echo "ERROR: Could not configure TAU" 
-    exit 1
+    echo "ERROR: Could not configure system-wide TAU; this is probably fine, it just means that some TAU Commander commands will take longer. Continuing with installation..."" 
 fi
 
 MYSHELL=`basename $SHELL`
