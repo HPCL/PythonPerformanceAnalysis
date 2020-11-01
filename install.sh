@@ -34,7 +34,5 @@ cd hatchet
 ./install.sh
 
 cd $PROJECT_DIR
-exec $MYSHELL -c "$PROJECT_DIR/taucmdr/installed/conda/bin/conda install matplotlib && \
-$PROJECT_DIR/taucmdr/installed/conda/bin/python -c 'import taucmdr' || echo \"INSTALL FAILED: Could not import taucmdr\" && \
-$PROJECT_DIR/taucmdr/installed/conda/bin/python -c 'import hatchet' || echo \"INSTALL FAILED: Could not import hatchet\""
-
+exec $MYSHELL -c "$PROJECT_DIR/taucmdr/installed/conda/bin/conda install -y matplotlib && \
+$PROJECT_DIR/taucmdr/installed/conda/bin/python -c 'import hatchet; import taucmdr' && echo \"SUCCESS! Add $PROJECT_DIR/taucmdr/installed/bin to your PATH and take a look at GettingStarted.ipynb\" || echo \"Installation failed: could not import hatchet or taucmdr\""
