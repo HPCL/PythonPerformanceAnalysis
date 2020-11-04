@@ -24,7 +24,7 @@ cd $PROJECT_DIR
 
 git clone --branch sane-dependencies https://github.com/ParaToolsInc/taucmdr.git taucmdr
 cd taucmdr
-#make install INSTALLDIR=$PROJECT_DIR/taucmdr/installed && \
+make install TAU=full  INSTALLDIR=$PROJECT_DIR/taucmdr/installed && \
 $PROJECT_DIR/taucmdr/installed/system/configure
 
 if [ "$?" != 0 ]; then
