@@ -2,9 +2,9 @@
 A set of python scripts and programs that can be used to analyze performance data from TAU experiments.
 
 ## Detailed Description
-This repository contains a set of python fucntions that can be used to organize, analyze, and plot results from measuring performance data using TAU.
+This repository contains a set of python fucntions that can be used to organize, analyze, and plot performance data.
 
-Data for analysis should be stored in TAU profiles or our pickled format.
+At the moment the scripts are designed to process data from TAU or Caliper format details re under the respective directories.
 
 The scripts rely heavily on the functionality provided by pandas dataframes (https://pandas.pydata.org/) to store and manage the data. Pandas also provides considerable statistical analysis functionality and some plotting functions to further the analysis. Additionally, we use pyplot to create figures not available in pandas.
 
