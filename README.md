@@ -1,14 +1,19 @@
 # Python Performance Analysis
-A set of python scripts and programs that can be used to analyze performance data from TAU experiments.
+A set of python scripts and programs that can be used to analyze performance data from Hardware Performance Montiors, especially those collected with TAU or Caliper. In addition to the TAU and Caliper data structures, some of the examples use the data-frame based Hatchet library for performance data.
 
 ## Detailed Description
 This repository contains a set of python fucntions that can be used to organize, analyze, and plot performance data.
 
-At the moment the scripts are designed to process data from TAU or Caliper format details re under the respective directories.
+At the moment the scripts are designed to process data from TAU or Caliper. The details on data format are are available under the respective directories.
 
 The scripts rely heavily on the functionality provided by pandas dataframes (https://pandas.pydata.org/) to store and manage the data. Pandas also provides considerable statistical analysis functionality and some plotting functions to further the analysis. Additionally, we use pyplot to create figures not available in pandas.
 
 We recommned using the functions in conjuntion with jupyter notebooks (which is how our examples are written) as it provides easy visualization, documentation, and sharing of the work.
+
+#### Subdirectories
+* TAU -  scripts design to transform TAU data into python or Hatchet dataframes.
+* Caliper - 
+* Roofline - Jupyter notebooks that are designed to plot rooflines based on HPM data
 
 ## Getting Started
 
