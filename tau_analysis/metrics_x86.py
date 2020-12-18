@@ -28,7 +28,9 @@ def add_MEM_BOUND_FRACTIONS(metrics):
 
     '''
     TOT_CYC  = 'PAPI_TOT_CYC'
-    STL_ALL  = 'PAPI_NATIVE_RESOURCE_STALLS:ALL'
+    # STL_ALL  = 'PAPI_NATIVE_CYCLE_ACTIVITY:STALLS_TOTAL'
+    STL_ALL  = 'PAPI_NATIVE_UOPS_EXECUTED:STALL_CYCLES'
+    # STL_ALL  = 'PAPI_NATIVE_RESOURCE_STALLS:ALL'
     STL_SB   = 'PAPI_NATIVE_RESOURCE_STALLS:SB'
 #     L1D_PEND = 'PAPI_NATIVE_CYCLE_ACTIVITY:CYCLES_L1D_PENDING'
     L1D_PEND = 'PAPI_NATIVE_CYCLE_ACTIVITY:STALLS_L1D_MISS' # might be thisnot sure yet
@@ -69,7 +71,8 @@ def add_BW_BOUND_FRACTIONS(metrics):
 
     '''
     TOT_CYC  = 'PAPI_TOT_CYC'
-    STL_ALL  = 'PAPI_NATIVE_RESOURCE_STALLS:ALL'
+    STL_ALL  = 'PAPI_NATIVE_CYCLE_ACTIVITY:STALLS_TOTAL'
+    # STL_ALL  = 'PAPI_NATIVE_RESOURCE_STALLS:ALL'
     STL_SB   = 'PAPI_NATIVE_RESOURCE_STALLS:SB'
     SQ_FULL  = 'PAPI_NATIVE_OFFCORE_REQUESTS_BUFFER:SQ_FULL'
     FB_FULL  = 'PAPI_NATIVE_L1D_PEND_MISS:FB_FULL'
@@ -77,10 +80,10 @@ def add_BW_BOUND_FRACTIONS(metrics):
 
 
     if(not (metrics.has_key(TOT_CYC) \
-            and metrics.has_key(STL_ALL) \
-            and metrics.has_key(STL_SB) \
-            and metrics.has_key(SQ_FULL) \
-            and metrics.has_key(FB_FULL) \
+        and metrics.has_key(STL_ALL) \
+        and metrics.has_key(STL_SB) \
+        and metrics.has_key(SQ_FULL) \
+        and metrics.has_key(FB_FULL) \
            ) ):
         print ("ERROR adding BW_BOUND_FRACTIONS to metric dictionary")
         return False
@@ -583,5 +586,185 @@ def add_MEM_STL_RATES(metrics):
     metrics['DERIVED_MEM_STL_MEM_RATE'] = (umstl / umcyc).stack()
 
     return True
+
+
+
+
+############################################################################################
+
+#                                   Metrics for Top Down Method
+
+############################################################################################
+
+
+def add_TOP_DOWN_FRACTIONS_1(metrics):
+    '''
+
+    '''
+    TOT_CYC  = 'PAPI_TOT_CYC'
+    REC_CYC  = 'PAPI_NATIVE_INT_MISC.RECOVERY_CYCLES'
+    IDQ_OPS  = 'PAPI_NATIVE_IDQ_UOPS_NOT_DELIVERED.CORE'
+    UOPS_ANY = 'PAPI_NATIVE_UOPS_ISSUED.ANY'
+    UOPS_RET = 'PAPI_NATIVE_UOPS_RETIRED.RETIRE_SLOTS'
+
+    if(not (metrics.has_key(TOT_CYC) \
+            and metrics.has_key(REC_CYC) \
+            and metrics.has_key(IDQ_OPS) \
+            and metrics.has_key(UOPS_ANY) \
+            and metrics.has_key(UOPS_RET) \
+           ) ):
+        print ("ERROR adding TOP_DOWN_FRACTIONS_1 to metric dictionary")
+        return False
+    
+    tot_cyc   = metrics[TOT_CYC].copy()
+    rec_cyc   = metrics[REC_CYC].copy()
+    idq_ops   = metrics[IDQ_OPS].copy()
+    uops_any  = metrics[UOPS_ANY].copy()
+    uops_ret  = metrics[UOPS_RET].copy()
+    
+    tot_cyc.index  = tot_cyc.index.droplevel('context')
+    rec_cyc.index  = rec_cyc.index.droplevel('context')
+    idq_ops.index  = idq_ops.index.droplevel('context')
+    uops_any.index = uops_any.index.droplevel('context')
+    uops_ret.index = uops_ret.index.droplevel('context')
+
+    utot_cyc  = tot_cyc.unstack()
+    urec_cyc  = rec_cyc.unstack()
+    uidq_ops  = idq_ops.unstack()
+    uuops_any = uops_any.unstack()
+    uuops_ret = uops_ret.unstack()
+
+    metrics['DERIVED_FRONT_FRACTION'] = ( uidq_ops/(6*utot_cyc) ).stack()
+    metrics['DERIVED_BAD_SPEC_FRACTION'] = ( (uuops_any-uuops_ret+4*urec_cyc)/(6*utot_cyc) ).stack()
+    metrics['DERIVED_RETIRED_FRACTION'] = ( uuops_ret/(6*utot_cyc) ).stack()
+
+    return True
+
+
+
+
+def add_TOP_DOWN_FRACTIONS_2(metrics):
+    '''
+
+    '''
+    TOT_CYC = 'PAPI_TOT_CYC'    
+    TOT_STL = 'PAPI_NATIVE_CYCLE_ACTIVITY:STALLS_TOTAL'
+    MEM_STL = 'PAPI_NATIVE_CYCLE_ACTIVITY:STALLS_MEM_ANY'
+    SB_STL  = 'PAPI_NATIVE_RESOURCE_STALLS:SB'
+    
+    
+    if(not (metrics.has_key(TOT_CYC) \
+            and metrics.has_key(TOT_STL) \
+            and metrics.has_key(MEM_STL) \
+            and metrics.has_key(SB_STL) \
+           ) ):
+        print ("ERROR adding TOP_DOWN_FRACTIONS_2 to metric dictionary")
+        return False
+    
+    tot_cyc  = metrics[TOT_CYC].copy()
+    tot_stl  = metrics[TOT_STL].copy()
+    mem_stl  = metrics[MEM_STL].copy()
+    sp_stl   = metrics[SB_STL].copy()
+    
+    tot_cyc.index  = tot_cyc.index.droplevel('context')
+    tot_stl.index  = tot_stl.index.droplevel('context')
+    mem_stl.index  = mem_stl.index.droplevel('context')
+    sp_stl.index   = sp_stl.index.droplevel('context')
+
+    utot_cyc  = tot_cyc.unstack()
+    utot_stl  = tot_stl.unstack()
+    umem_stl  = mem_stl.unstack()
+    usp_stl   = sp_stl.unstack()
+
+    metrics['DERIVED_MEM_FRACTION']  = ( (umem_stl+usp_stl)/(utot_cyc) ).stack()
+    metrics['DERIVED_CORE_FRACTION'] = ( (utot_stl - (umem_stl+usp_stl))/(utot_cyc) ).stack()
+
+    return True
+
+
+def add_TOP_DOWN_FRACTIONS_RET2(metrics):
+    '''
+
+    '''
+    TOT_CYC  = 'PAPI_TOT_CYC'    
+    UOPS_RET = 'PAPI_NATIVE_UOPS_RETIRED.RETIRE_SLOTS'
+    IDQ_MS   = 'PAPI_NATIVE_IDQ:MS_UOPS'
+    
+    
+    if(not (metrics.has_key(TOT_CYC) \
+            and metrics.has_key(UOPS_RET) \
+            and metrics.has_key(IDQ_MS) \
+           ) ):
+        print ("ERROR adding TOP_DOWN_FRACTIONS_RET2 to metric dictionary")
+        return False
+    
+    tot_cyc  = metrics[TOT_CYC].copy()
+    uops_ret = metrics[UOPS_RET].copy()
+    idq_ms   = metrics[IDQ_MS].copy()
+    
+    tot_cyc.index  = tot_cyc.index.droplevel('context')
+    uops_ret.index = uops_ret.index.droplevel('context')
+    idq_ms.index   = idq_ms.index.droplevel('context')
+
+    utot_cyc  = tot_cyc.unstack()
+    uuops_ret = uops_ret.unstack()
+    uidq_ms   = idq_ms.unstack()
+
+    metrics['DERIVED_MICRO_SEQ_FRACTION'] = ( (uidq_ms)/(6*utot_cyc) ).stack()
+    metrics['DERIVED_RET_BASE_FRACTION']  = ( (uuops_ret-uidq_ms)/(6*utot_cyc) ).stack()
+
+    return True
+
+
+def add_TOP_DOWN_FRACTIONS_RET3(metrics):
+    '''
+
+    '''
+    TOT_CYC  = 'PAPI_TOT_CYC'    
+    # INST_ALL = 'PAPI_NATIVE_INST_RETIRED:ALL'
+    INST_ALL = 'PAPI_NATIVE_UOPS_RETIRED.RETIRE_SLOTS'
+    D_128    = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:128B_PACKED_DOUBLE'
+    D_256    = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:256B_PACKED_DOUBLE'
+    D_512    = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:512B_PACKED_DOUBLE'
+    D_SCALAR = 'PAPI_NATIVE_FP_ARITH_INST_RETIRED:SCALAR_DOUBLE'
+    
+    
+    if(not (metrics.has_key(TOT_CYC) \
+            and metrics.has_key(INST_ALL) \
+            and metrics.has_key(D_128) \
+            and metrics.has_key(D_256) \
+            and metrics.has_key(D_512) \
+            and metrics.has_key(D_SCALAR) \
+           ) ):
+        print ("ERROR adding TOP_DOWN_FRACTIONS_RET3 to metric dictionary")
+        return False
+    
+    tot_cyc  = metrics[TOT_CYC].copy()
+    inst_all = metrics[INST_ALL].copy()
+    d_128    = metrics[D_128].copy()
+    d_256   = metrics[D_256].copy()
+    d_512   = metrics[D_512].copy()
+    d_scalar   = metrics[D_SCALAR].copy()
+    
+    tot_cyc.index  = tot_cyc.index.droplevel('context')
+    inst_all.index = inst_all.index.droplevel('context')
+    d_128.index    = d_128.index.droplevel('context')
+    d_256.index    = d_256.index.droplevel('context')
+    d_512.index    = d_512.index.droplevel('context')
+    d_scalar.index = d_scalar.index.droplevel('context')
+
+    utot_cyc  = tot_cyc.unstack()
+    uinst_all = inst_all.unstack()
+    ud_128    = d_128.unstack()
+    ud_256    = d_256.unstack()
+    ud_512    = d_512.unstack()
+    ud_scalar = d_scalar.unstack()
+
+    metrics['DERIVED_RETIRED_SIMD']   = ( (ud_128+ud_256+ud_512)/(uinst_all) ).stack()
+    metrics['DERIVED_RETIRED_SCALAR'] = ( (ud_scalar)/(uinst_all) ).stack()
+    metrics['DERIVED_RETIRED_OTHER']  = ( (uinst_all-ud_scalar-ud_128-ud_256-ud_512)/(uinst_all) ).stack()
+
+    return True
+
 
 
