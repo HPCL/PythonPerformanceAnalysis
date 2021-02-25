@@ -57,3 +57,6 @@ python -c 'import taucmdr'
 python -c 'import hatchet'
 ```
 
+## What next
+
+Complete documentation is at https://pythonperformanceanalysis.readthedocs.io/ (work in progress).
