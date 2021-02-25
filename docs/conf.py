@@ -55,8 +55,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Python Performance Analysis Recipes'
-copyright = '2021, Boyana Norris'
-author = 'Boyana Norris'
+copyright = '2021, Brian Gravelle & Boyana Norris'
+author = 'Brian Gravelle and Boyana Norris'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
