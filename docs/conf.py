@@ -119,10 +119,10 @@ todo_include_todos = True
 html_theme_path = astropy_sphinx_theme.get_html_theme_path()
 html_theme = 'bootstrap-astropy'
 html_theme_options = {
-    'logotext1': 'packagename',  # white,  semi-bold
+    'logotext1': 'Python Performance Analysis Recipes',  # white,  semi-bold
     'logotext2': '',  # orange, light
     'logotext3': ':docs',   # white,  light
-    'astropy_project_menubar': True
+    'astropy_project_menubar': False
     }
 
 #html_theme = 'alabaster'
