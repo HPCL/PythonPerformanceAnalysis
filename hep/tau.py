@@ -47,19 +47,19 @@ import sys
 import shelve
 
 try:
-    import taucmdr
+    import ..ext.taucmdr
 except ImportError:
     sys.path.insert(0, os.path.join(os.environ['__TAUCMDR_HOME__'], 'packages'))
 finally:
-    from taucmdr.model.project import Project
-    from taucmdr.data.tau_trial_data import TauTrialProfileData
+    from ..ext.taucmdr.model.project import Project
+    from ..ext.taucmdr.data.tau_trial_data import TauTrialProfileData
 
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.style.use('ggplot')
 font = {'weight' : 'bold',
         'size'   : 24
-}
+        }
 matplotlib.rc('font', **font)
 
 import pandas as pd
@@ -82,33 +82,33 @@ import copy
 ############################################################################################
 
 METRIC_NAMES={'PAPI_TOT_CYC':'Total Cycles',
-'PAPI_NATIVE_UOPS_RETIRED:PACKED_SIMD':'Vector operations',
-'PAPI_L2_TCA' : 'L2 accesses',
-'PAPI_NATIVE_LLC_MISSES' : 'L3 total cache misses',
-'PAPI_NATIVE_LLC_REFERENCES' : 'L3 accesses',
-'PAPI_TLB_DM' : 'TLB data misses',
-'PAPI_BR_MSP' : 'Branch mispredictions',
-'PAPI_L1_TCM' : 'L1 total cache misses',
-'PAPI_L2_TCM' : 'L2 total cache misses',
-'PAPI_LST_INS' : 'Load/store instructions',
-'PAPI_BR_CN' : 'Conditional branches',
-'PAPI_TOT_INS' : 'Total instructions',
-'PAPI_BR_INS' : 'Branch instructions',
-'PAPI_BR_UCN' : 'Unconditional branches',
-'PAPI_NATIVE_UOPS_RETIRED:SCALAR_SIMD' : 'Scalar vector ops',
-'PAPI_RES_STL' : 'Total resource stalls (cycles)',
-'PAPI_NATIVE_FETCH_STALL':'Number of cycles stalled for instruction cache miss',
-'PAPI_NATIVE_RS_FULL_STALL' : 'Resource stalls',
-'DERIVED_STALL_PERCENT' : 'Fraction of total stalls',
-'DERIVED_L1_MISSRATE' : 'L1 miss rate',
-'DERIVED_L3_MISSRATE' : 'L3 miss rate',
-'DERIVED_BRANCH_MR' : 'Branch misprediction rate',
-'DERIVED_IPC' : 'Instructions per cycle',
-'DERIVED_CPI' : 'Cycles per instruction',
-'DERIVED_VIPI' : 'Vector instructions fraction',
-'DERIVED_VIPC' :'Vector instructions per cycle',
-'Other' : 'Other'
-}
+              'PAPI_NATIVE_UOPS_RETIRED:PACKED_SIMD':'Vector operations',
+              'PAPI_L2_TCA' : 'L2 accesses',
+              'PAPI_NATIVE_LLC_MISSES' : 'L3 total cache misses',
+              'PAPI_NATIVE_LLC_REFERENCES' : 'L3 accesses',
+              'PAPI_TLB_DM' : 'TLB data misses',
+              'PAPI_BR_MSP' : 'Branch mispredictions',
+              'PAPI_L1_TCM' : 'L1 total cache misses',
+              'PAPI_L2_TCM' : 'L2 total cache misses',
+              'PAPI_LST_INS' : 'Load/store instructions',
+              'PAPI_BR_CN' : 'Conditional branches',
+              'PAPI_TOT_INS' : 'Total instructions',
+              'PAPI_BR_INS' : 'Branch instructions',
+              'PAPI_BR_UCN' : 'Unconditional branches',
+              'PAPI_NATIVE_UOPS_RETIRED:SCALAR_SIMD' : 'Scalar vector ops',
+              'PAPI_RES_STL' : 'Total resource stalls (cycles)',
+              'PAPI_NATIVE_FETCH_STALL':'Number of cycles stalled for instruction cache miss',
+              'PAPI_NATIVE_RS_FULL_STALL' : 'Resource stalls',
+              'DERIVED_STALL_PERCENT' : 'Fraction of total stalls',
+              'DERIVED_L1_MISSRATE' : 'L1 miss rate',
+              'DERIVED_L3_MISSRATE' : 'L3 miss rate',
+              'DERIVED_BRANCH_MR' : 'Branch misprediction rate',
+              'DERIVED_IPC' : 'Instructions per cycle',
+              'DERIVED_CPI' : 'Cycles per instruction',
+              'DERIVED_VIPI' : 'Vector instructions fraction',
+              'DERIVED_VIPC' :'Vector instructions per cycle',
+              'Other' : 'Other'
+              }
 
 
 
@@ -133,7 +133,7 @@ def get_pandas_non_summary():
     trial_data = {}
     for i in xrange(0, num_trials):
         trial_data[i] = trials[i].get_data()
-        
+
     start = time.time()
     metric_data = {}
 
@@ -145,14 +145,14 @@ def get_pandas_non_summary():
                     thread_data.append(trial_data[trial][i][j][k].interval_data())
                     metric_data[trial_data[trial][i][j][k].metric] = pd.concat(thread_data)
                     metric_data[trial_data[trial][i][j][k].metric].index.names = ['trial', 'rank', 'context', 'thread', 'region']
-        
+
     end = time.time()
-    
+
     print('Time spent constructing dataframes %s' %(end-start))
     print('\nMetrics included:')
     for m in metric_data.keys():
         print("\t%s"%m)
-    
+
     return metric_data
 
 def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=True,time=False,multi=False,data_dir=".tau"):
@@ -161,12 +161,12 @@ def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=T
         TODO filtering and scaling
     '''
     path = data_dir + "/" + application + "/" + experiment + "/"
-    key=application + "-" + experiment 
-    
+    key=application + "-" + experiment
+
     if os.path.exists(key + '.shelve.dat'):
-         d = shelve.open(key+'.shelve',flag='r')
-         metric_dict = d[key]
-         d.close()
+        d = shelve.open(key+'.shelve',flag='r')
+        metric_dict = d[key]
+        d.close()
     else:
         if  not os.path.exists(path):
             sys.exit("Error: invalid data path: %s" % path)
@@ -177,7 +177,7 @@ def load_perf_data(application,experiment,nolibs=False,scaling=False,callpaths=T
             metric_dict = get_pandas_multi(path, callpaths=callpaths)
         else:
             metric_dict = get_pandas(path,callpaths=callpaths)
-    
+
     if nolibs and not scaling:
         filtered_dict = {}
         for k,v in metric_dict.items():
@@ -210,7 +210,7 @@ def get_pandas(path, callpaths=False, summary=True):
     if not os.path.exists(path):
         sys.exit("Error: invalid data path: %s" % path)
     metric_data = {}
-    
+
     paths = [path+n+'/' for n in listdir(path) if (not isfile(join(path, n)))]
     num_trials = len(paths)
     #files = [f for f in listdir(path) if not isfile(join(p, f))]
@@ -229,7 +229,7 @@ def get_pandas(path, callpaths=False, summary=True):
         if not callpaths:
             #metric_data[metric]['Total'] = metric_data[metric][metric_data[metric].index.get_level_values('region').str.match('[SUMMARY] .TAU application')]
             metric_data[metric] = metric_data[metric][~metric_data[metric].index.get_level_values('region').str.contains(".TAU application")]
-            
+
         metric_data['METADATA'] = prof_data.metadata
     return metric_data
 
@@ -247,28 +247,28 @@ def get_pandas_multi(path, callpaths=False, summary=True):
     if not os.path.exists(path):
         sys.exit("Error: invalid data path: %s" % path)
     metric_data = {}
-    
+
     paths = [path+n+'/' for n in listdir(path) if (not isfile(join(path, n)))]
     num_trials = len(paths)
     #files = [f for f in listdir(path) if not isfile(join(p, f))]
     for p in paths:
         d = [f for f in listdir(p) if (not isfile(join(p, f))) and (not (f == 'MULTI__TIME'))]
-        for _d in d: 
-	        prof_data = TauTrialProfileData.parse(p+'/'+_d)
-	        time_data = TauTrialProfileData.parse(p+'/MULTI__TIME')
-	        prof_data.metadata = time_data.metadata
-	        metric = prof_data.metric
-	        if summary:
-	            metric_data[metric] = prof_data.summarize_samples()
-	        else:
-	            metric_data[metric] = prof_data.interval_data()
+        for _d in d:
+            prof_data = TauTrialProfileData.parse(p+'/'+_d)
+            time_data = TauTrialProfileData.parse(p+'/MULTI__TIME')
+            prof_data.metadata = time_data.metadata
+            metric = prof_data.metric
+            if summary:
+                metric_data[metric] = prof_data.summarize_samples()
+            else:
+                metric_data[metric] = prof_data.interval_data()
 
-	        metric_data[metric].index.names = ['rank', 'context', 'thread', 'region']
-	        if not callpaths:
-	            #metric_data[metric]['Total'] = metric_data[metric][metric_data[metric].index.get_level_values('region').str.match('[SUMMARY] .TAU application')]
-	            metric_data[metric] = metric_data[metric][~metric_data[metric].index.get_level_values('region').str.contains(".TAU application")]
-	            
-	        metric_data['METADATA'] = prof_data.metadata
+            metric_data[metric].index.names = ['rank', 'context', 'thread', 'region']
+            if not callpaths:
+                #metric_data[metric]['Total'] = metric_data[metric][metric_data[metric].index.get_level_values('region').str.match('[SUMMARY] .TAU application')]
+                metric_data[metric] = metric_data[metric][~metric_data[metric].index.get_level_values('region').str.contains(".TAU application")]
+
+            metric_data['METADATA'] = prof_data.metadata
     return metric_data
 
 def get_pandas_scaling(path, callpaths=False, time=False, summary=True):
@@ -280,9 +280,9 @@ def get_pandas_scaling(path, callpaths=False, time=False, summary=True):
         - samples are turned into summaries
         - tau cmdr must be installed and .tau with the relevant data must be in this dir
     '''
-    
+
     metric_data = {}
-    
+
     # generate list of paths to read in
     paths = [path+n+'/' for n in listdir(path) if (not isfile(join(path, n)))]
     num_trials = len(paths)
@@ -330,7 +330,7 @@ def get_pandas_scaling(path, callpaths=False, time=False, summary=True):
             prof_data = TauTrialProfileData.parse(trial_dir)
         except:
             print ( "Parsing ERROR: \ndir = %s" % (trial_dir))
-            continue 
+            continue
 
 
         metric = prof_data.metric
@@ -413,13 +413,13 @@ def combine_metrics(metric_dict,inc_exc='Inclusive'):
 
     if inc_exc == 'Inclusive': todrop = 'Exclusive'
     else: todrop = 'Inclusive'
-    
+
     metric_dict = copy.deepcopy(metric_dict)
     #TODO actually make this happen reading data in
     for m in metric_dict:
         if (not m == 'METADATA') and ('DERIVED' not in m):
             metric_dict[m].index = metric_dict[m].index.droplevel('context')
-    
+
     alldata = metric_dict['PAPI_TOT_CYC'].copy().drop(['Calls','Subcalls',todrop,'ProfileCalls'], axis=1)
     alldata['PAPI_TOT_CYC'] = alldata[inc_exc]
     alldata.drop([inc_exc],axis=1,inplace=True)
@@ -428,7 +428,7 @@ def combine_metrics(metric_dict,inc_exc='Inclusive'):
         if x in ['PAPI_TOT_CYC','METADATA']: continue
         alldata[x] = metric_dict[x][inc_exc]
     return alldata
-                  
+
 
 ############################################################################################
 
@@ -437,7 +437,7 @@ def combine_metrics(metric_dict,inc_exc='Inclusive'):
 ############################################################################################
 
 def print_metadata(data):
-    
+
     for key in data['METADATA']:
         print('{:50} {}'.format(key,data['METADATA'][key] ))
 
@@ -472,7 +472,7 @@ def highlight_max(data, color='yellow'):
         is_max = data == data.max().max()
         return pd.DataFrame(np.where(is_max, attr, ''),
                             index=data.index, columns=data.columns)
-    
+
 def highlight(df, fmt="{:.2%}", ht=0.5, hcolor='yellow'):
     return df.style.format(fmt).apply(lambda x: ["background: %s" % hcolor if v >= ht else "" for v in x], axis = 1)
 
@@ -513,7 +513,7 @@ def scaling_plot(data, inclusive=True, plot=True, function="\[SUMMARY\] .TAU app
     else:
         # cause TAU has 2 of everything average is half
         data_list = [metric_data[kt][metric_data[kt].index.get_level_values('region').str.contains(function)][which].sum()/(2*kt) for kt in thread_list]
-    
+
     if plot: plt = matplotlib.pyplot.plot(thread_list, data_list)
 
     return thread_list, data_list
@@ -538,7 +538,7 @@ def get_thread_level_metric_scaling(_data, inclusive=True, metric='NONE'):
     if metric=='NONE':
         data = _data
     else:
-        data = select_metric_from_scaling(_data, metric) 
+        data = select_metric_from_scaling(_data, metric)
 
     metric_data = {}
     for kt in data:
@@ -567,7 +567,7 @@ def get_func_level_metric(data, inclusive=False, avg=True, func = 'NULL'):
     '''
     if inclusive: which='Inclusive'
     else: which='Exclusive'
-        
+
     group_data = data.groupby(['region'])[[which]]
 
     if avg:
@@ -597,7 +597,7 @@ def get_full_app_metric(data, inclusive=True, avg=True, func = 'application'):
     '''
     if inclusive: which='Inclusive'
     else: which='Exclusive'
-        
+
     group_data = data.groupby(['region'])[[which]]
 
     if avg:
@@ -620,13 +620,13 @@ def get_full_app_metric(data, inclusive=True, avg=True, func = 'application'):
 
 def filter_libs_out(dfs):
     dfs_filtered = dfs.groupby(level='region').filter(lambda x: ('=>' not in x.name) \
-                                                                and ('_kmp' not in x.name)\
-                                                                and ('tbb' not in x.name)\
-                                                                and ('syscall' not in x.name)\
-                                                                and ('.so' not in x.name)\
-                                                                and (' __pthread' not in x.name)\
-                                                                and ('std::' not in x.name)\
-                                                                )
+                                                                and ('_kmp' not in x.name) \
+                                                                and ('tbb' not in x.name) \
+                                                                and ('syscall' not in x.name) \
+                                                                and ('.so' not in x.name) \
+                                                                and (' __pthread' not in x.name) \
+                                                                and ('std::' not in x.name) \
+                                                      )
     return dfs_filtered
 
 def largest_stddev(dfs,n):
@@ -689,9 +689,9 @@ def hotspots(dfs, n, flag):
 def get_hotspots(metric,n=10):
     print('selected metric: %s\n' %metric)
     hotspots(expr_intervals[metric], n, 1)
-    
+
     print('='*80)
-    
+
     filtered_dfs = filter_libs_out(expr_intervals[metric])
     hotspots(filtered_dfs, n, 1)
 
@@ -734,7 +734,7 @@ def get_hotspots(metric,n=10):
 #     else:
 #         return multiindex
 
-    
+
 # def print_table(intervals):
 #     '''
 #     intervals is a panda with a metric's data
@@ -743,7 +743,7 @@ def get_hotspots(metric,n=10):
 #     expr_intervals_link.index = expr_intervals_link.index.map(lambda x: add_link(x))
 #     HTML(expr_intervals_link.to_html(escape=False))
 
-    
+
 # metric='PAPI_TOT_CYC'
 # print_table(expr_intervals[metric])
 # expr_intervals_link = expr_intervals[metric].copy()

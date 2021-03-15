@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # A couple of scripts to set the environent and import data from a .tau set of results
 
-from utilities import *
-from metrics import *
-import numbers, copy, shelve
+from metrics.metrics import *
+import shelve
 from multiprocessing import Process
 
 datasets = {

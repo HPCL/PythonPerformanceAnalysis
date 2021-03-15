@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/PythonPerformanceAnalysis.iml" filepath="$PROJECT_DIR$/.idea/PythonPerformanceAnalysis.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../taucmdr/.idea/taucmdr.iml" filepath="$PROJECT_DIR$/../taucmdr/.idea/taucmdr.iml" />
+    </modules>
+  </component>
+</project>

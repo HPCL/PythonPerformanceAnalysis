@@ -16,12 +16,6 @@ add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics)
 '''
 
 
-from utilities import *
-
-
-
-
-
 def add_metric_to_scaling_data(data, metric_func, other=None):
     '''
     data is data with scaling information

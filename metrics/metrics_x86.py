@@ -19,10 +19,6 @@ add_DERIVED_RATIO_FETCH_STL_TOT_CYC(metrics)
 '''
 
 
-from utilities import *
-
-
-
 def add_MEM_BOUND_FRACTIONS(metrics):
     '''
 
