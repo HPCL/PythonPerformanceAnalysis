@@ -22,7 +22,7 @@ echo "Installing TAU Commander and Hatchet in $PROJECT_DIR"
 
 cd $PROJECT_DIR
 
-git clone --branch sane-dependencies https://github.com/ParaToolsInc/taucmdr.git taucmdr
+git clone --branch unstable https://github.com/ParaToolsInc/taucmdr.git taucmdr
 cd taucmdr
 make install TAU=full  INSTALLDIR=$PROJECT_DIR/taucmdr/installed && \
 $PROJECT_DIR/taucmdr/installed/system/configure
